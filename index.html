@@ -255,6 +255,26 @@
 </head>
 <body class="lang-en">
 
+    <!-- Set saved/detected language class ASAP to avoid a flash of English -->
+    <script>
+        (function () {
+            var SUPPORTED = ['en', 'fr', 'es', 'de', 'ar'];
+            var lang = null;
+            try { lang = localStorage.getItem('zidup_lang'); } catch (e) {}
+            if (!lang || SUPPORTED.indexOf(lang) === -1) {
+                var langs = navigator.languages || [navigator.language || 'en'];
+                for (var i = 0; i < langs.length; i++) {
+                    var code = langs[i].toLowerCase().split('-')[0];
+                    if (SUPPORTED.indexOf(code) !== -1) { lang = code; break; }
+                }
+            }
+            if (!lang || SUPPORTED.indexOf(lang) === -1) lang = 'en';
+            document.body.className = document.body.className.replace(/lang-\w+/g, '').trim() + ' lang-' + lang;
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        })();
+    </script>
+
     <!-- NAVIGATION -->
     <nav id="navbar">
         <img src="https://z-cdn-media.chatglm.cn/files/1b7b67ff-57fd-426e-b04f-8fbbc0659eed.png?auth_key=1879908878-d63f02d1f6ee4525b6a9771fec132866-0-e5a015131449b942cfd66515b29311e8" alt="ZID UP Logo" class="nav-logo">
@@ -264,7 +284,7 @@
                 <li><a href="#services"><span data-lang="en" class="il">Services</span><span data-lang="fr" class="il">Services</span><span data-lang="es" class="il">Servicios</span><span data-lang="de" class="il">Dienstleistungen</span><span data-lang="ar" class="il">خدماتنا</span></a></li>
                 <li><a href="#whyus"><span data-lang="en" class="il">Why Us</span><span data-lang="fr" class="il">Pourquoi nous</span><span data-lang="es" class="il">Por qué nosotros</span><span data-lang="de" class="il">Warum wir</span><span data-lang="ar" class="il">لماذا نحن</span></a></li>
                 <li><a href="#stories"><span data-lang="en" class="il">Success Stories</span><span data-lang="fr" class="il">Réussites</span><span data-lang="es" class="il">Casos de éxito</span><span data-lang="de" class="il">Erfolge</span><span data-lang="ar" class="il">قصص النجاح</span></a></li>
-                <li><a href="#contact" class="nav-cta"><span data-lang="en" class="il">Free Consultation</span><span data-lang="fr" class="il">Consultation Gratuite</span><span data-lang="es" class="il">Consulta Gratuita</span><span data-lang="de" class="il">Kostenlose Beratung</span><span data-lang="ar" class="il">استشارة مجانية</span></a></li>
+                <li><a href="#contact" class="nav-cta"><span data-lang="en" class="il">Free Consultation</span><span data-lang="fr" class="il">Consultation Gratuite</span><span data-lang="es" class="il">Consulta Gratuita</span><span data-lang="de" class="il">Kostenlose Beratung</span><span data-lang="ar" class="il">استشارة مجا��ية</span></a></li>
             </ul>
             <div class="lang-switcher" role="group" aria-label="Select language">
                 <button class="lang-btn active" data-lang="en" lang="en" aria-pressed="true" title="English">EN</button>
@@ -427,7 +447,7 @@
                     <span data-lang="en">OUR IMPACT</span><span data-lang="fr">NOTRE IMPACT</span><span data-lang="es">NUESTRO IMPACTO</span><span data-lang="de">UNSERE WIRKUNG</span><span data-lang="ar">تأثيرنا</span>
                 </div>
                 <h2 style="color: white; margin-top: 0.9rem;">
-                    <span data-lang="en">Our Numbers <span class="gold">Speak</span></span><span data-lang="fr">Nos Chiffres <span class="gold">Parlent</span></span><span data-lang="es">Nuestros Números <span class="gold">Hablan</span></span><span data-lang="de">Unsere Zahlen <span class="gold">Sprechen</span></span><span data-lang="ar">أرقامنا <span class="gold">تحكي</span></span>
+                    <span data-lang="en">Our Numbers <span class="gold">Speak</span></span><span data-lang="fr">Nos Chiffres <span class="gold">Parlent</span></span><span data-lang="es">Nuestros Números <span class="gold">Hablan</span></span><span data-lang="de">Unsere Zahlen <span class="gold">Sprechen</span></span><span data-lang="ar">��رقامنا <span class="gold">تحكي</span></span>
                 </h2>
             </div>
             <div class="stats-row">
@@ -483,7 +503,7 @@
                 <span data-lang="en">Your business deserves the same results</span><span data-lang="fr">Votre entreprise mérite les mêmes résultats</span><span data-lang="es">Tu negocio merece los mismos resultados</span><span data-lang="de">Ihr Unternehmen verdient die gleichen Ergebnisse</span><span data-lang="ar">مشروعك يستاهل نفس النتائج</span>
             </div>
             <a href="#contact" class="cta-btn">
-                <span data-lang="en">Book Free Consultation →</span><span data-lang="fr">Réserver Consultation Gratuite →</span><span data-lang="es">Reservar Consulta Gratuita →</span><span data-lang="de">Kostenlose Beratung Buchen →</span><span data-lang="ar">← احجز استشارتك المجانية</span>
+                <span data-lang="en">Book Free Consultation →</span><span data-lang="fr">Réserver Consultation Gratuite →</span><span data-lang="es">Reservar Consulta Gratuita →</span><span data-lang="de">Kostenlose Beratung Buchen →</span><span data-lang="ar">← احجز استش��رتك المجانية</span>
             </a>
         </div>
     </section>
@@ -555,7 +575,7 @@
             fr: { name: "Nom", phone: "Téléphone", type: "Type d'entreprise", msg: "Message", submit: "Envoyer →", sending: "Envoi...", optDef: "Choisissez votre type...", cafe: "Café", rest: "Restaurant", hotel: "Hôtel", other: "Autre", loc: "Emplacement", email: "Email", phoneL: "Téléphone", wa: "Contacter via WhatsApp", phName: "Entrez votre nom...", phMsg: "Que voulez-vous nous demander ?", served: "Servi par Zid Up", verified: "Résultat vérifié", fillFields: "Veuillez remplir tous les champs obligatoires ⚠️", thanks: "Merci ", soon: " ! Nous vous contacterons bientôt ✅" },
             es: { name: "Nombre", phone: "Teléfono", type: "Tipo de negocio", msg: "Mensaje", submit: "Enviar →", sending: "Enviando...", optDef: "Elige tu tipo de negocio...", cafe: "Cafetería", rest: "Restaurante", hotel: "Hotel", other: "Otro", loc: "Ubicación", email: "Correo", phoneL: "Teléfono", wa: "Contactar por WhatsApp", phName: "Escribe tu nombre...", phMsg: "¿Qué te gustaría preguntarnos?", served: "Atendido por Zid Up", verified: "Resultado verificado", fillFields: "Por favor, completa todos los campos obligatorios ⚠️", thanks: "¡Gracias ", soon: "! Te contactaremos pronto ✅" },
             de: { name: "Name", phone: "Telefon", type: "Unternehmenstyp", msg: "Nachricht", submit: "Senden →", sending: "Senden...", optDef: "Wählen Sie Ihren Typ...", cafe: "Café", rest: "Restaurant", hotel: "Hotel", other: "Andere", loc: "Standort", email: "E-Mail", phoneL: "Telefon", wa: "Über WhatsApp kontaktieren", phName: "Geben Sie Ihren Namen ein...", phMsg: "Was möchten Sie uns fragen?", served: "Betreut von Zid Up", verified: "Verifiziertes Ergebnis", fillFields: "Bitte füllen Sie alle Pflichtfelder aus ⚠️", thanks: "Danke ", soon: "! Wir melden uns bald bei Ihnen ✅" },
-            ar: { name: "الاسم", phone: "رقم الهاتف", type: "نوع المشروع", msg: "الرسالة", submit: "← أرسل الآن", sending: "جاري الإرسال...", optDef: "اختر نوع مشروعك...", cafe: "مقهى", rest: "مطعم", hotel: "فندق", other: "أخرى", loc: "الموقع", email: "البريد الإلكتروني", phoneL: "الهاتف", wa: "تواصل عبر واتساب", phName: "أدخل اسمك...", phMsg: "شنوة تحب تسألنا؟", served: "خدمهم Zid Up", verified: "نتيجة مؤكدة", fillFields: "يرجى ملء جميع الحقول المطلوبة ⚠️", thanks: "شكراً ", soon: "! سنتواصل معك قريباً ✅" }
+            ar: { name: "الاسم", phone: "رقم الهاتف", type: "نوع المشروع", msg: "��لرسالة", submit: "← أرسل الآن", sending: "جاري الإرسال...", optDef: "اختر نوع مشروعك...", cafe: "مقهى", rest: "مطعم", hotel: "فندق", other: "أخرى", loc: "الموقع", email: "البريد الإلكتروني", phoneL: "الهاتف", wa: "تواصل عبر واتساب", phName: "أدخل اسمك...", phMsg: "شنوة تحب تسألنا؟", served: "خدمهم Zid Up", verified: "نتيجة مؤكدة", fillFields: "ي��جى ملء جميع الحقول المطلوبة ⚠️", thanks: "شكراً ", soon: "! سنتواصل معك قريباً ✅" }
         };
 
         let currentLang = DEFAULT_LANG;
@@ -737,9 +757,9 @@
         // ── FORM ──
         function handleSubmit(e) {
             e.preventDefault(); const form = e.target; const name = form.querySelector('[name="name"]').value.trim(); const phone = form.querySelector('[name="phone"]').value.trim(); const type = form.querySelector('[name="type"]').value;
-            if (!name || !phone || !type) { showToast(currentLang === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة ⚠️' : 'Please fill all required fields ⚠️'); return; }
+            if (!name || !phone || !type) { showToast(dict[currentLang].fillFields); return; }
             const btn = form.querySelector('.submit-btn'); btn.textContent = dict[currentLang].sending; btn.disabled = true;
-            setTimeout(() => { showToast((currentLang === 'ar' ? 'شكراً ' : 'Thank you ') + name + '! ' + (currentLang === 'ar' ? 'سنتواصل معك قريباً ✅' : 'We will contact you soon ✅')); form.reset(); btn.textContent = dict[currentLang].submit; btn.disabled = false; }, 1500);
+            setTimeout(() => { showToast(dict[currentLang].thanks + name + dict[currentLang].soon); form.reset(); btn.textContent = dict[currentLang].submit; btn.disabled = false; }, 1500);
         }
 
         // ── TOAST ──
