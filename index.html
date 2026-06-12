@@ -26,16 +26,26 @@
         ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
         body::after { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; opacity: 0.02; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
-        /* ── LANGUAGE SYSTEM ── */
+        /* ── LANGUAGE SYSTEM ──
+           Each translatable element renders one <span data-lang="xx"> per language.
+           CSS shows only the span matching the active body.lang-xx class.
+           `.force-show` is toggled by JS as an English fallback when a translation
+           is missing for the active language (see applyFallback() in the script). */
         [data-lang] { display: none !important; }
         body.lang-en [data-lang="en"] { display: var(--ld, block) !important; }
         body.lang-fr [data-lang="fr"] { display: var(--ld, block) !important; }
         body.lang-de [data-lang="de"] { display: var(--ld, block) !important; }
+        body.lang-es [data-lang="es"] { display: var(--ld, block) !important; }
         body.lang-ar [data-lang="ar"] { display: var(--ld, block) !important; }
+        [data-lang].force-show { display: var(--ld, block) !important; }
         .il { --ld: inline; }
         .il-flex { --ld: flex; }
 
-        /* RTL Adjustments */
+        /* Smooth content fade when switching languages */
+        body { transition: opacity 0.25s ease; }
+        body.is-switching { opacity: 0.45; }
+
+        /* ── RTL ADJUSTMENTS (applied when Arabic is active) ── */
         html[dir="rtl"] body { font-family: 'Cairo', 'Manrope', sans-serif; }
         html[dir="rtl"] .client-card { border-left: none; border-right: 4px solid var(--gold); }
         html[dir="rtl"] .client-card:hover { border-right-color: var(--brown); }
@@ -43,6 +53,25 @@
         html[dir="rtl"] .whoweare-ar { border-right: none; border-left: 3px solid var(--gold); padding-right: 0; padding-left: 2rem; direction: ltr; }
         html[dir="rtl"] .card-result { text-align: right; direction: rtl; }
         html[dir="rtl"] .stat-num { direction: ltr; }
+        /* Flip directional layouts so menus, forms & nav adapt correctly in RTL */
+        html[dir="rtl"] .nav-links { flex-direction: row-reverse; }
+        html[dir="rtl"] .nav-links a::after { left: auto; right: 0; }
+        html[dir="rtl"] .form-group label,
+        html[dir="rtl"] .contact-info-text,
+        html[dir="rtl"] .section-label,
+        html[dir="rtl"] .section-title,
+        html[dir="rtl"] .why-text-main,
+        html[dir="rtl"] .why-text-sub,
+        html[dir="rtl"] .service-title,
+        html[dir="rtl"] .service-desc,
+        html[dir="rtl"] .whoweare p,
+        html[dir="rtl"] .whoweare h3 { text-align: right; }
+        html[dir="rtl"] .form-group input,
+        html[dir="rtl"] .form-group select,
+        html[dir="rtl"] .form-group textarea { text-align: right; direction: rtl; }
+        html[dir="rtl"] .why-card,
+        html[dir="rtl"] .contact-info-item { flex-direction: row-reverse; }
+        html[dir="rtl"] .toast { border-left: none; border-right: 4px solid var(--gold); }
 
         /* ── ANIMATIONS ── */
         .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -67,9 +96,11 @@
         .mobile-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
 
         /* Language Switcher */
-        .lang-switcher { display: flex; background: rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden; border: 1px solid rgba(240,165,0,0.2); }
-        .lang-btn { padding: 0.4rem 0.7rem; background: transparent; border: none; color: rgba(255,255,255,0.6); font-family: 'Cairo', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-        .lang-btn:hover { color: var(--gold); } .lang-btn.active { background: var(--gold); color: var(--brown); }
+        .lang-switcher { display: flex; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; border: 1px solid rgba(240,165,0,0.25); padding: 2px; gap: 2px; }
+        .lang-btn { padding: 0.4rem 0.7rem; background: transparent; border: none; border-radius: 7px; color: rgba(255,255,255,0.65); font-family: 'Cairo', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.25s ease; letter-spacing: 0.02em; }
+        .lang-btn:hover { color: var(--gold); background: rgba(240,165,0,0.1); }
+        .lang-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        .lang-btn.active { background: var(--gold); color: var(--brown); box-shadow: 0 2px 8px rgba(240,165,0,0.35); }
 
         .mobile-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(59,31,10,0.98); z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; }
         .mobile-menu.open { display: flex; } .mobile-menu a { color: white; text-decoration: none; font-size: 1.4rem; font-family: 'Cairo', sans-serif; font-weight: 600; transition: color 0.3s; } .mobile-menu a:hover { color: var(--gold); }
@@ -224,22 +255,43 @@
 </head>
 <body class="lang-en">
 
+    <!-- Set saved/detected language class ASAP to avoid a flash of English -->
+    <script>
+        (function () {
+            var SUPPORTED = ['en', 'fr', 'es', 'de', 'ar'];
+            var lang = null;
+            try { lang = localStorage.getItem('zidup_lang'); } catch (e) {}
+            if (!lang || SUPPORTED.indexOf(lang) === -1) {
+                var langs = navigator.languages || [navigator.language || 'en'];
+                for (var i = 0; i < langs.length; i++) {
+                    var code = langs[i].toLowerCase().split('-')[0];
+                    if (SUPPORTED.indexOf(code) !== -1) { lang = code; break; }
+                }
+            }
+            if (!lang || SUPPORTED.indexOf(lang) === -1) lang = 'en';
+            document.body.className = document.body.className.replace(/lang-\w+/g, '').trim() + ' lang-' + lang;
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        })();
+    </script>
+
     <!-- NAVIGATION -->
     <nav id="navbar">
         <img src="https://z-cdn-media.chatglm.cn/files/1b7b67ff-57fd-426e-b04f-8fbbc0659eed.png?auth_key=1879908878-d63f02d1f6ee4525b6a9771fec132866-0-e5a015131449b942cfd66515b29311e8" alt="ZID UP Logo" class="nav-logo">
         <div class="nav-right">
             <ul class="nav-links">
-                <li><a href="#whoweare"><span data-lang="en" class="il">Who We Are</span><span data-lang="fr" class="il">Qui sommes-nous</span><span data-lang="de" class="il">Wer wir sind</span><span data-lang="ar" class="il">من نحن</span></a></li>
-                <li><a href="#services"><span data-lang="en" class="il">Services</span><span data-lang="fr" class="il">Services</span><span data-lang="de" class="il">Dienstleistungen</span><span data-lang="ar" class="il">خدماتنا</span></a></li>
-                <li><a href="#whyus"><span data-lang="en" class="il">Why Us</span><span data-lang="fr" class="il">Pourquoi nous</span><span data-lang="de" class="il">Warum wir</span><span data-lang="ar" class="il">لماذا نحن</span></a></li>
-                <li><a href="#stories"><span data-lang="en" class="il">Success Stories</span><span data-lang="fr" class="il">Réussites</span><span data-lang="de" class="il">Erfolge</span><span data-lang="ar" class="il">قصص النجاح</span></a></li>
-                <li><a href="#contact" class="nav-cta"><span data-lang="en" class="il">Free Consultation</span><span data-lang="fr" class="il">Consultation Gratuite</span><span data-lang="de" class="il">Kostenlose Beratung</span><span data-lang="ar" class="il">استشارة مجانية</span></a></li>
+                <li><a href="#whoweare"><span data-lang="en" class="il">Who We Are</span><span data-lang="fr" class="il">Qui sommes-nous</span><span data-lang="es" class="il">Quiénes somos</span><span data-lang="de" class="il">Wer wir sind</span><span data-lang="ar" class="il">من نحن</span></a></li>
+                <li><a href="#services"><span data-lang="en" class="il">Services</span><span data-lang="fr" class="il">Services</span><span data-lang="es" class="il">Servicios</span><span data-lang="de" class="il">Dienstleistungen</span><span data-lang="ar" class="il">خدماتنا</span></a></li>
+                <li><a href="#whyus"><span data-lang="en" class="il">Why Us</span><span data-lang="fr" class="il">Pourquoi nous</span><span data-lang="es" class="il">Por qué nosotros</span><span data-lang="de" class="il">Warum wir</span><span data-lang="ar" class="il">لماذا نحن</span></a></li>
+                <li><a href="#stories"><span data-lang="en" class="il">Success Stories</span><span data-lang="fr" class="il">Réussites</span><span data-lang="es" class="il">Casos de éxito</span><span data-lang="de" class="il">Erfolge</span><span data-lang="ar" class="il">قصص النجاح</span></a></li>
+                <li><a href="#contact" class="nav-cta"><span data-lang="en" class="il">Free Consultation</span><span data-lang="fr" class="il">Consultation Gratuite</span><span data-lang="es" class="il">Consulta Gratuita</span><span data-lang="de" class="il">Kostenlose Beratung</span><span data-lang="ar" class="il">استشارة مجا��ية</span></a></li>
             </ul>
-            <div class="lang-switcher">
-                <button class="lang-btn active" data-lang="en">EN</button>
-                <button class="lang-btn" data-lang="fr">FR</button>
-                <button class="lang-btn" data-lang="de">DE</button>
-                <button class="lang-btn" data-lang="ar">عربي</button>
+            <div class="lang-switcher" role="group" aria-label="Select language">
+                <button class="lang-btn active" data-lang="en" lang="en" aria-pressed="true" title="English">EN</button>
+                <button class="lang-btn" data-lang="fr" lang="fr" aria-pressed="false" title="Français">FR</button>
+                <button class="lang-btn" data-lang="es" lang="es" aria-pressed="false" title="Español">ES</button>
+                <button class="lang-btn" data-lang="de" lang="de" aria-pressed="false" title="Deutsch">DE</button>
+                <button class="lang-btn" data-lang="ar" lang="ar" aria-pressed="false" title="العربية">عربي</button>
             </div>
             <button class="mobile-toggle" id="menuToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
         </div>
@@ -248,15 +300,16 @@
     <!-- MOBILE MENU -->
     <div class="mobile-menu" id="mobileMenu">
         <button class="mobile-close" id="menuClose" aria-label="Close menu"><i class="fas fa-times"></i></button>
-        <a href="#whoweare" onclick="closeMobileMenu()"><span data-lang="en" class="il">Who We Are</span><span data-lang="fr" class="il">Qui sommes-nous</span><span data-lang="de" class="il">Wer wir sind</span><span data-lang="ar" class="il">من نحن</span></a>
-        <a href="#services" onclick="closeMobileMenu()"><span data-lang="en" class="il">Services</span><span data-lang="fr" class="il">Services</span><span data-lang="de" class="il">Dienstleistungen</span><span data-lang="ar" class="il">خدماتنا</span></a>
-        <a href="#stories" onclick="closeMobileMenu()"><span data-lang="en" class="il">Success Stories</span><span data-lang="fr" class="il">Réussites</span><span data-lang="de" class="il">Erfolge</span><span data-lang="ar" class="il">قصص النجاح</span></a>
-        <a href="#contact" onclick="closeMobileMenu()"><span data-lang="en" class="il">Contact</span><span data-lang="fr" class="il">Contact</span><span data-lang="de" class="il">Kontakt</span><span data-lang="ar" class="il">اتصل بنا</span></a>
-        <div class="lang-switcher" style="margin-top: 2rem;">
-            <button class="lang-btn" data-lang="en">EN</button>
-            <button class="lang-btn" data-lang="fr">FR</button>
-            <button class="lang-btn" data-lang="de">DE</button>
-            <button class="lang-btn" data-lang="ar">عربي</button>
+        <a href="#whoweare" onclick="closeMobileMenu()"><span data-lang="en" class="il">Who We Are</span><span data-lang="fr" class="il">Qui sommes-nous</span><span data-lang="es" class="il">Quiénes somos</span><span data-lang="de" class="il">Wer wir sind</span><span data-lang="ar" class="il">من نحن</span></a>
+        <a href="#services" onclick="closeMobileMenu()"><span data-lang="en" class="il">Services</span><span data-lang="fr" class="il">Services</span><span data-lang="es" class="il">Servicios</span><span data-lang="de" class="il">Dienstleistungen</span><span data-lang="ar" class="il">خدماتنا</span></a>
+        <a href="#stories" onclick="closeMobileMenu()"><span data-lang="en" class="il">Success Stories</span><span data-lang="fr" class="il">Réussites</span><span data-lang="es" class="il">Casos de éxito</span><span data-lang="de" class="il">Erfolge</span><span data-lang="ar" class="il">قصص النجاح</span></a>
+        <a href="#contact" onclick="closeMobileMenu()"><span data-lang="en" class="il">Contact</span><span data-lang="fr" class="il">Contact</span><span data-lang="es" class="il">Contacto</span><span data-lang="de" class="il">Kontakt</span><span data-lang="ar" class="il">اتصل بنا</span></a>
+        <div class="lang-switcher" style="margin-top: 2rem;" role="group" aria-label="Select language">
+            <button class="lang-btn" data-lang="en" lang="en" aria-pressed="true" title="English">EN</button>
+            <button class="lang-btn" data-lang="fr" lang="fr" aria-pressed="false" title="Français">FR</button>
+            <button class="lang-btn" data-lang="es" lang="es" aria-pressed="false" title="Español">ES</button>
+            <button class="lang-btn" data-lang="de" lang="de" aria-pressed="false" title="Deutsch">DE</button>
+            <button class="lang-btn" data-lang="ar" lang="ar" aria-pressed="false" title="العربية">عربي</button>
         </div>
     </div>
 
@@ -267,17 +320,18 @@
         <div class="hero-content">
             <img src="https://z-cdn-media.chatglm.cn/files/1b7b67ff-57fd-426e-b04f-8fbbc0659eed.png?auth_key=1879908878-d63f02d1f6ee4525b6a9771fec132866-0-e5a015131449b942cfd66515b29311e8" alt="ZID UP" class="hero-logo fade-up">
             <div class="hero-badge fade-up delay-1">
-                <span data-lang="en">Tunisia's Business Growth Partner</span><span data-lang="fr">Partenaire de croissance en Tunisie</span><span data-lang="de">Tunesiens Partner für Geschäftswachstum</span><span data-lang="ar">شريكك في نمو الأعمال بتونس</span>
+                <span data-lang="en">Tunisia's Business Growth Partner</span><span data-lang="fr">Partenaire de croissance en Tunisie</span><span data-lang="es">Tu socio de crecimiento en Túnez</span><span data-lang="de">Tunesiens Partner für Geschäftswachstum</span><span data-lang="ar">شريكك في نمو الأعمال بتونس</span>
             </div>
             <h1 class="fade-up delay-2"><span class="gold">ZID</span> <span class="arrow-up">↑</span> UP</h1>
             <p class="hero-sub fade-up delay-3">
                 <span data-lang="en">We Grow Coffee Shops & Restaurants in Tunisia</span>
                 <span data-lang="fr">Nous développons les cafés et restaurants en Tunisie</span>
+                <span data-lang="es">Hacemos crecer cafeterías y restaurantes en Túnez</span>
                 <span data-lang="de">Wir wachsen Cafés und Restaurants in Tunesien</span>
                 <span data-lang="ar">نطوّرو مقهاك، مطعمك، وفندقك – ونزيدو في دخلك الحقيقي</span>
             </p>
             <a href="#contact" class="hero-cta fade-up delay-4">
-                <span data-lang="en">Book Free Consultation →</span><span data-lang="fr">Réserver Consultation Gratuite →</span><span data-lang="de">Kostenlose Beratung Buchen →</span><span data-lang="ar">← احجز استشارتك المجانية</span>
+                <span data-lang="en">Book Free Consultation →</span><span data-lang="fr">Réserver Consultation Gratuite →</span><span data-lang="es">Reservar Consulta Gratuita →</span><span data-lang="de">Kostenlose Beratung Buchen →</span><span data-lang="ar">← احجز استشارتك المجانية</span>
             </a>
         </div>
         <div class="hero-scroll"><i class="fas fa-chevron-down"></i></div>
@@ -288,32 +342,34 @@
         <div class="section-container">
             <div style="text-align:center; margin-bottom: 3rem;">
                 <div class="section-label fade-up">
-                    <span data-lang="en">ABOUT US</span><span data-lang="fr">À PROPOS</span><span data-lang="de">ÜBER UNS</span><span data-lang="ar">من نحن</span>
+                    <span data-lang="en">ABOUT US</span><span data-lang="fr">À PROPOS</span><span data-lang="es">SOBRE NOSOTROS</span><span data-lang="de">ÜBER UNS</span><span data-lang="ar">من نحن</span>
                 </div>
                 <h2 class="section-title fade-up">
-                    <span data-lang="en">Who We Are</span><span data-lang="fr">Qui sommes-nous</span><span data-lang="de">Wer wir sind</span><span data-lang="ar">من نحن؟</span>
+                    <span data-lang="en">Who We Are</span><span data-lang="fr">Qui sommes-nous</span><span data-lang="es">Quiénes somos</span><span data-lang="de">Wer wir sind</span><span data-lang="ar">من نحن؟</span>
                 </h2>
                 <div class="golden-divider"></div>
             </div>
             <div class="whoweare-grid">
                 <div class="whoweare-en fade-up">
                     <h3>
-                        <span data-lang="en">Our Story</span><span data-lang="fr">Notre Histoire</span><span data-lang="de">Unsere Geschichte</span><span data-lang="ar">قصتنا</span>
+                        <span data-lang="en">Our Story</span><span data-lang="fr">Notre Histoire</span><span data-lang="es">Nuestra Historia</span><span data-lang="de">Unsere Geschichte</span><span data-lang="ar">قصتنا</span>
                     </h3>
                     <p>
                         <span data-lang="en">Zid Up is a Tunisian consulting firm specialized in growing cafes, restaurants & small hotels. We combine business strategy with digital technology to deliver real, measurable results — not just advice.</span>
                         <span data-lang="fr">Zid Up est un cabinet de conseil tunisien spécialisé dans le développement des cafés, restaurants et petits hôtels. Nous combinons stratégie commerciale et technologie numérique pour fournir des résultats réels et mesurables.</span>
+                        <span data-lang="es">Zid Up es una consultora tunecina especializada en el crecimiento de cafeterías, restaurantes y pequeños hoteles. Combinamos estrategia empresarial con tecnología digital para ofrecer resultados reales y medibles, no solo consejos.</span>
                         <span data-lang="de">Zid Up ist ein tunesisches Beratungsunternehmen, das auf das Wachstum von Cafés, Restaurants und kleinen Hotels spezialisiert ist. Wir verbinden Geschäftsstrategie mit digitaler Technologie für echte, messbare Ergebnisse.</span>
                         <span data-lang="ar">Zid Up هي شركة تونسية متخصصة في تطوير المقاهي، المطاعم، والفنادق الصغيرة. نجمع بين الخبرة في الأعمال والتكنولوجيا الرقمية باش نجيبو حلول حقيقية وملموسة لكل صاحب مشروع.</span>
                     </p>
                 </div>
                 <div class="whoweare-ar fade-up delay-2">
                     <h3>
-                        <span data-lang="en">Our Approach</span><span data-lang="fr">Notre Approche</span><span data-lang="de">Unser Ansatz</span><span data-lang="ar">منهجنا</span>
+                        <span data-lang="en">Our Approach</span><span data-lang="fr">Notre Approche</span><span data-lang="es">Nuestro Enfoque</span><span data-lang="de">Unser Ansatz</span><span data-lang="ar">منهجنا</span>
                     </h3>
                     <p>
                         <span data-lang="en">We don't just tell you what to do — we implement it with you, side by side, until you see the impact on your revenue and customer experience.</span>
                         <span data-lang="fr">Nous ne nous contentons pas de vous dire quoi faire — nous l'implémentons avec vous, côte à côte, jusqu'à ce que vous voyiez l'impact sur vos revenus.</span>
+                        <span data-lang="es">No solo te decimos qué hacer: lo implementamos contigo, codo a codo, hasta que veas el impacto en tus ingresos y en la experiencia de tus clientes.</span>
                         <span data-lang="de">Wir sagen Ihnen nicht nur, was Sie tun sollen — wir setzen es mit Ihnen um, Seite an Seite, bis Sie die Auswirkungen auf Ihren Umsatz sehen.</span>
                         <span data-lang="ar">ما نقولوش عليك شنوة تعمل — نطبقو معاك خطوة بخطوة حتى تشوف النتائج بنفسك في الدخل وتجربة العملاء.</span>
                     </p>
@@ -327,20 +383,20 @@
         <div class="section-container">
             <div style="text-align:center; margin-bottom: 3rem;">
                 <div class="section-label fade-up">
-                    <span data-lang="en">WHAT WE DO</span><span data-lang="fr">CE QUE NOUS FAISONS</span><span data-lang="de">WAS WIR TUN</span><span data-lang="ar">ماذا نقدم</span>
+                    <span data-lang="en">WHAT WE DO</span><span data-lang="fr">CE QUE NOUS FAISONS</span><span data-lang="es">LO QUE HACEMOS</span><span data-lang="de">WAS WIR TUN</span><span data-lang="ar">ماذا نقدم</span>
                 </div>
                 <h2 class="section-title fade-up">
-                    <span data-lang="en">Our Services</span><span data-lang="fr">Nos Services</span><span data-lang="de">Unsere Dienstleistungen</span><span data-lang="ar">خدماتنا</span>
+                    <span data-lang="en">Our Services</span><span data-lang="fr">Nos Services</span><span data-lang="es">Nuestros Servicios</span><span data-lang="de">Unsere Dienstleistungen</span><span data-lang="ar">خدماتنا</span>
                 </h2>
                 <div class="golden-divider"></div>
             </div>
             <div class="services-grid">
-                <div class="service-card fade-up"><div class="service-icon"><i class="fas fa-rocket"></i></div><div class="service-title"><span data-lang="en">Full Solution Implementation</span><span data-lang="fr">Implémentation Complète</span><span data-lang="de">Vollständige Implementierung</span><span data-lang="ar">تطبيق الحلول الكاملة</span></div><p class="service-desc"><span data-lang="en">From strategy to execution — we implement every change in your business, ensuring nothing stays on paper.</span><span data-lang="fr">De la stratégie à l'exécution — nous implémentons chaque changement, rien ne reste sur le papier.</span><span data-lang="de">Von der Strategie bis zur Umsetzung — wir setzen jede Veränderung in Ihrem Unternehmen um.</span><span data-lang="ar">من الاستراتيجية للتنفيذ — نطبقو كل تغيير في مشروعك، باش ما يبقاش حاجة على الورق.</span></p></div>
-                <div class="service-card fade-up delay-1"><div class="service-icon"><i class="fas fa-search"></i></div><div class="service-title"><span data-lang="en">Full Business Audit</span><span data-lang="fr">Audit Complet</span><span data-lang="de">Vollständige Geschäftsprüfung</span><span data-lang="ar">فحص كامل للمشروع</span></div><p class="service-desc"><span data-lang="en">Deep analysis of your operations, finances, and customer experience to find hidden growth opportunities.</span><span data-lang="fr">Analyse approfondie de vos opérations, finances et expérience client pour trouver des opportunités cachées.</span><span data-lang="de">Tiefgehende Analyse Ihrer Abläufe, Finanzen und Kundenerfahrung zur Entdeckung verborgener Wachstumschancen.</span><span data-lang="ar">تحليل عميق لعملياتك، ماليتك، وتجربة العملاء باش نلقو فرص نمو مخبية.</span></p></div>
-                <div class="service-card fade-up delay-2"><div class="service-icon"><i class="fas fa-users"></i></div><div class="service-title"><span data-lang="en">Team Training</span><span data-lang="fr">Formation d'Équipe</span><span data-lang="de">Teamtraining</span><span data-lang="ar">تدريب الفريق</span></div><p class="service-desc"><span data-lang="en">Hands-on training for your staff to improve service quality, speed, and customer satisfaction.</span><span data-lang="fr">Formation pratique pour votre personnel afin d'améliorer la qualité, la rapidité et la satisfaction client.</span><span data-lang="de">Praxisnahes Training für Ihr Personal zur Verbesserung von Servicequalität, Geschwindigkeit und Kundenzufriedenheit.</span><span data-lang="ar">تدريب عملي لفريقك باش يحسن جودة الخدمة، السرعة، ورضا الزبون.</span></p></div>
-                <div class="service-card fade-up delay-3"><div class="service-icon"><i class="fas fa-laptop-code"></i></div><div class="service-title"><span data-lang="en">Professional Website</span><span data-lang="fr">Site Web Professionnel</span><span data-lang="de">Professionelle Website</span><span data-lang="ar">موقع ويب احترافي</span></div><p class="service-desc"><span data-lang="en">Beautiful, fast websites that attract customers and make your brand stand out online.</span><span data-lang="fr">Sites web beaux et rapides qui attirent les clients et font ressortir votre marque en ligne.</span><span data-lang="de">Schöne, schnelle Websites, die Kunden anziehen und Ihre Marke online hervorstechen lassen.</span><span data-lang="ar">مواقع جميلة وسريعة تجذب العملاء وتخلّي علامتك التجارية تتميز أونلاين.</span></p></div>
-                <div class="service-card fade-up delay-4"><div class="service-icon"><i class="fas fa-mobile-alt"></i></div><div class="service-title"><span data-lang="en">Digital Marketing Management</span><span data-lang="fr">Gestion du Marketing Digital</span><span data-lang="de">Digitales Marketing</span><span data-lang="ar">إدارة التسويق الرقمي</span></div><p class="service-desc"><span data-lang="en">Social media, ads, and content strategy that drives real foot traffic to your door.</span><span data-lang="fr">Réseaux sociaux, publicités et stratégie de contenu qui génèrent du trafic réel.</span><span data-lang="de">Social Media, Werbung und Content-Strategie, die echten Fußverkehr in Ihr Geschäft bringt.</span><span data-lang="ar">سوشيال ميديا، إعلانات، واستراتيجية محتوى تجيب زبائن حقيقيين لمحلك.</span></p></div>
-                <div class="service-card fade-up delay-5"><div class="service-icon"><i class="fas fa-chart-line"></i></div><div class="service-title"><span data-lang="en">Monthly Follow-Up</span><span data-lang="fr">Suivi Mensuel</span><span data-lang="de">Monatliche Nachverfolgung</span><span data-lang="ar">متابعة شهرية</span></div><p class="service-desc"><span data-lang="en">Ongoing monitoring, reporting, and adjustments to keep your growth on track every month.</span><span data-lang="fr">Suivi continu, rapports et ajustements pour garder votre croissance sur la bonne voie.</span><span data-lang="de">Laufende Überwachung, Berichterstattung und Anpassungen, um Ihr Wachstum auf Kurs zu halten.</span><span data-lang="ar">مراقبة مستمرة، تقارير، وتعديلات باش نموك يبقى على الطريق الصحيح كل شهر.</span></p></div>
+                <div class="service-card fade-up"><div class="service-icon"><i class="fas fa-rocket"></i></div><div class="service-title"><span data-lang="en">Full Solution Implementation</span><span data-lang="fr">Implémentation Complète</span><span data-lang="es">Implementación Completa</span><span data-lang="de">Vollständige Implementierung</span><span data-lang="ar">تطبيق الحلول الكاملة</span></div><p class="service-desc"><span data-lang="en">From strategy to execution — we implement every change in your business, ensuring nothing stays on paper.</span><span data-lang="fr">De la stratégie à l'exécution — nous implémentons chaque changement, rien ne reste sur le papier.</span><span data-lang="es">De la estrategia a la ejecución: implementamos cada cambio en tu negocio, sin que nada se quede en el papel.</span><span data-lang="de">Von der Strategie bis zur Umsetzung — wir setzen jede Veränderung in Ihrem Unternehmen um.</span><span data-lang="ar">من الاستراتيجية للتنفيذ — نطبقو كل تغيير في مشروعك، باش ما يبقاش حاجة على الورق.</span></p></div>
+                <div class="service-card fade-up delay-1"><div class="service-icon"><i class="fas fa-search"></i></div><div class="service-title"><span data-lang="en">Full Business Audit</span><span data-lang="fr">Audit Complet</span><span data-lang="es">Auditoría Integral</span><span data-lang="de">Vollständige Geschäftsprüfung</span><span data-lang="ar">فحص كامل للمشروع</span></div><p class="service-desc"><span data-lang="en">Deep analysis of your operations, finances, and customer experience to find hidden growth opportunities.</span><span data-lang="fr">Analyse approfondie de vos opérations, finances et expérience client pour trouver des opportunités cachées.</span><span data-lang="es">Análisis profundo de tus operaciones, finanzas y experiencia del cliente para encontrar oportunidades de crecimiento ocultas.</span><span data-lang="de">Tiefgehende Analyse Ihrer Abläufe, Finanzen und Kundenerfahrung zur Entdeckung verborgener Wachstumschancen.</span><span data-lang="ar">تحليل عميق لعملياتك، ماليتك، وتجربة العملاء باش نلقو فرص نمو مخبية.</span></p></div>
+                <div class="service-card fade-up delay-2"><div class="service-icon"><i class="fas fa-users"></i></div><div class="service-title"><span data-lang="en">Team Training</span><span data-lang="fr">Formation d'Équipe</span><span data-lang="es">Formación del Equipo</span><span data-lang="de">Teamtraining</span><span data-lang="ar">تدريب الفريق</span></div><p class="service-desc"><span data-lang="en">Hands-on training for your staff to improve service quality, speed, and customer satisfaction.</span><span data-lang="fr">Formation pratique pour votre personnel afin d'améliorer la qualité, la rapidité et la satisfaction client.</span><span data-lang="es">Formación práctica para tu personal para mejorar la calidad del servicio, la rapidez y la satisfacción del cliente.</span><span data-lang="de">Praxisnahes Training für Ihr Personal zur Verbesserung von Servicequalität, Geschwindigkeit und Kundenzufriedenheit.</span><span data-lang="ar">تدريب عملي لفريقك باش يحسن جودة الخدمة، السرعة، ورضا الزبون.</span></p></div>
+                <div class="service-card fade-up delay-3"><div class="service-icon"><i class="fas fa-laptop-code"></i></div><div class="service-title"><span data-lang="en">Professional Website</span><span data-lang="fr">Site Web Professionnel</span><span data-lang="es">Sitio Web Profesional</span><span data-lang="de">Professionelle Website</span><span data-lang="ar">موقع ويب احترافي</span></div><p class="service-desc"><span data-lang="en">Beautiful, fast websites that attract customers and make your brand stand out online.</span><span data-lang="fr">Sites web beaux et rapides qui attirent les clients et font ressortir votre marque en ligne.</span><span data-lang="es">Sitios web atractivos y rápidos que atraen clientes y hacen destacar tu marca en línea.</span><span data-lang="de">Schöne, schnelle Websites, die Kunden anziehen und Ihre Marke online hervorstechen lassen.</span><span data-lang="ar">مواقع جميلة وسريعة تجذب العملاء وتخلّي علامتك التجارية تتميز أونلاين.</span></p></div>
+                <div class="service-card fade-up delay-4"><div class="service-icon"><i class="fas fa-mobile-alt"></i></div><div class="service-title"><span data-lang="en">Digital Marketing Management</span><span data-lang="fr">Gestion du Marketing Digital</span><span data-lang="es">Gestión de Marketing Digital</span><span data-lang="de">Digitales Marketing</span><span data-lang="ar">إدارة التسويق الرقمي</span></div><p class="service-desc"><span data-lang="en">Social media, ads, and content strategy that drives real foot traffic to your door.</span><span data-lang="fr">Réseaux sociaux, publicités et stratégie de contenu qui génèrent du trafic réel.</span><span data-lang="es">Redes sociales, anuncios y estrategia de contenido que atraen clientes reales a tu puerta.</span><span data-lang="de">Social Media, Werbung und Content-Strategie, die echten Fußverkehr in Ihr Geschäft bringt.</span><span data-lang="ar">سوشيال ميديا، إعلانات، واستراتيجية محتوى تجيب زبائن حقيقيين لمحلك.</span></p></div>
+                <div class="service-card fade-up delay-5"><div class="service-icon"><i class="fas fa-chart-line"></i></div><div class="service-title"><span data-lang="en">Monthly Follow-Up</span><span data-lang="fr">Suivi Mensuel</span><span data-lang="es">Seguimiento Mensual</span><span data-lang="de">Monatliche Nachverfolgung</span><span data-lang="ar">متابعة شهرية</span></div><p class="service-desc"><span data-lang="en">Ongoing monitoring, reporting, and adjustments to keep your growth on track every month.</span><span data-lang="fr">Suivi continu, rapports et ajustements pour garder votre croissance sur la bonne voie.</span><span data-lang="es">Monitoreo continuo, informes y ajustes para mantener tu crecimiento en marcha cada mes.</span><span data-lang="de">Laufende Überwachung, Berichterstattung und Anpassungen, um Ihr Wachstum auf Kurs zu halten.</span><span data-lang="ar">مراقبة مستمرة، تقارير، وتعديلات باش نموك يبقى على الطريق الصحيح كل شهر.</span></p></div>
             </div>
         </div>
     </section>
@@ -350,18 +406,18 @@
         <div class="section-container">
             <div style="text-align:center; margin-bottom: 3rem;">
                 <div class="section-label fade-up">
-                    <span data-lang="en">WHY CHOOSE US</span><span data-lang="fr">POURQUOI NOUS CHOISIR</span><span data-lang="de">WARUM WIR</span><span data-lang="ar">لماذا نحن</span>
+                    <span data-lang="en">WHY CHOOSE US</span><span data-lang="fr">POURQUOI NOUS CHOISIR</span><span data-lang="es">POR QUÉ ELEGIRNOS</span><span data-lang="de">WARUM WIR</span><span data-lang="ar">لماذا نحن</span>
                 </div>
                 <h2 class="section-title fade-up">
-                    <span data-lang="en">Why Zid Up?</span><span data-lang="fr">Pourquoi Zid Up ?</span><span data-lang="de">Warum Zid Up?</span><span data-lang="ar">علاش Zid Up؟</span>
+                    <span data-lang="en">Why Zid Up?</span><span data-lang="fr">Pourquoi Zid Up ?</span><span data-lang="es">¿Por qué Zid Up?</span><span data-lang="de">Warum Zid Up?</span><span data-lang="ar">علاش Zid Up؟</span>
                 </h2>
                 <div class="golden-divider"></div>
             </div>
             <div class="whyus-grid">
-                <div class="why-card fade-up"><div class="why-check"><i class="fas fa-check"></i></div><div><div class="why-text-main"><span data-lang="en">We implement, we don't just talk</span><span data-lang="fr">Nous implémentons, nous ne parlons pas</span><span data-lang="de">Wir setzen um, wir reden nicht nur</span><span data-lang="ar">نطبقو – ما نحكيوش بس</span></div><div class="why-text-sub"><span data-lang="en">Real action, real results.</span><span data-lang="fr">De l'action, des résultats.</span><span data-lang="de">Echtes Handeln, echte Ergebnisse.</span><span data-lang="ar">فعل حقيقي ونتائج ملموسة.</span></div></div></div>
-                <div class="why-card fade-up delay-1"><div class="why-check"><i class="fas fa-check"></i></div><div><div class="why-text-main"><span data-lang="en">Tech + Business combined</span><span data-lang="fr">Tech + Business combinés</span><span data-lang="de">Tech + Business kombiniert</span><span data-lang="ar">تقنية + أعمال في نفس الوقت</span></div><div class="why-text-sub"><span data-lang="en">Maximum impact for your business.</span><span data-lang="fr">Impact maximum pour votre entreprise.</span><span data-lang="de">Maximale Wirkung für Ihr Geschäft.</span><span data-lang="ar">تأثير كبير لمشروعك.</span></div></div></div>
-                <div class="why-card fade-up delay-2"><div class="why-check"><i class="fas fa-check"></i></div><div><div class="why-text-main"><span data-lang="en">We understand the Tunisian market</span><span data-lang="fr">Nous comprenons le marché tunisien</span><span data-lang="de">Wir verstehen den tunesischen Markt</span><span data-lang="ar">نفهمو السوق التونسي</span></div><div class="why-text-sub"><span data-lang="en">Inside and out.</span><span data-lang="fr">De l'intérieur.</span><span data-lang="de">In- und auswendig.</span><span data-lang="ar">من الداخل والخارج.</span></div></div></div>
-                <div class="why-card fade-up delay-3"><div class="why-check"><i class="fas fa-check"></i></div><div><div class="why-text-main"><span data-lang="en">Measurable results</span><span data-lang="fr">Résultats mesurables</span><span data-lang="de">Messbare Ergebnisse</span><span data-lang="ar">نتائج قابلة للقياس</span></div><div class="why-text-sub"><span data-lang="en">You can see it in your revenue.</span><span data-lang="fr">Visibles dans votre chiffre d'affaires.</span><span data-lang="de">Sichtbar in Ihrem Umsatz.</span><span data-lang="ar">تقدر تشوفها في مداخيلك.</span></div></div></div>
+                <div class="why-card fade-up"><div class="why-check"><i class="fas fa-check"></i></div><div><div class="why-text-main"><span data-lang="en">We implement, we don't just talk</span><span data-lang="fr">Nous implémentons, nous ne parlons pas</span><span data-lang="es">Implementamos, no solo hablamos</span><span data-lang="de">Wir setzen um, wir reden nicht nur</span><span data-lang="ar">نطبقو – ما نحكيوش بس</span></div><div class="why-text-sub"><span data-lang="en">Real action, real results.</span><span data-lang="fr">De l'action, des résultats.</span><span data-lang="es">Acción real, resultados reales.</span><span data-lang="de">Echtes Handeln, echte Ergebnisse.</span><span data-lang="ar">فعل حقيقي ونتائج ملموسة.</span></div></div></div>
+                <div class="why-card fade-up delay-1"><div class="why-check"><i class="fas fa-check"></i></div><div><div class="why-text-main"><span data-lang="en">Tech + Business combined</span><span data-lang="fr">Tech + Business combinés</span><span data-lang="es">Tecnología + Negocio combinados</span><span data-lang="de">Tech + Business kombiniert</span><span data-lang="ar">تقنية + أعمال في نفس الوقت</span></div><div class="why-text-sub"><span data-lang="en">Maximum impact for your business.</span><span data-lang="fr">Impact maximum pour votre entreprise.</span><span data-lang="es">Máximo impacto para tu negocio.</span><span data-lang="de">Maximale Wirkung für Ihr Geschäft.</span><span data-lang="ar">تأثير كبير لمشروعك.</span></div></div></div>
+                <div class="why-card fade-up delay-2"><div class="why-check"><i class="fas fa-check"></i></div><div><div class="why-text-main"><span data-lang="en">We understand the Tunisian market</span><span data-lang="fr">Nous comprenons le marché tunisien</span><span data-lang="es">Entendemos el mercado tunecino</span><span data-lang="de">Wir verstehen den tunesischen Markt</span><span data-lang="ar">نفهمو السوق التونسي</span></div><div class="why-text-sub"><span data-lang="en">Inside and out.</span><span data-lang="fr">De l'intérieur.</span><span data-lang="es">A fondo.</span><span data-lang="de">In- und auswendig.</span><span data-lang="ar">من الداخل والخارج.</span></div></div></div>
+                <div class="why-card fade-up delay-3"><div class="why-check"><i class="fas fa-check"></i></div><div><div class="why-text-main"><span data-lang="en">Measurable results</span><span data-lang="fr">Résultats mesurables</span><span data-lang="es">Resultados medibles</span><span data-lang="de">Messbare Ergebnisse</span><span data-lang="ar">نتائج قابلة للقياس</span></div><div class="why-text-sub"><span data-lang="en">You can see it in your revenue.</span><span data-lang="fr">Visibles dans votre chiffre d'affaires.</span><span data-lang="es">Visibles en tus ingresos.</span><span data-lang="de">Sichtbar in Ihrem Umsatz.</span><span data-lang="ar">تقدر تشوفها في مداخيلك.</span></div></div></div>
             </div>
         </div>
     </section>
@@ -371,11 +427,12 @@
         <div class="guarantee-content">
             <div class="guarantee-shield fade-up"><i class="fas fa-shield-alt"></i></div>
             <h2 class="fade-up">
-                <span data-lang="en">Our 100% Guarantee</span><span data-lang="fr">Notre Garantie 100%</span><span data-lang="de">Unsere 100% Garantie</span><span data-lang="ar">ضمانتنا ليك – 100%</span>
+                <span data-lang="en">Our 100% Guarantee</span><span data-lang="fr">Notre Garantie 100%</span><span data-lang="es">Nuestra Garantía 100%</span><span data-lang="de">Unsere 100% Garantie</span><span data-lang="ar">ضمانتنا ليك – 100%</span>
             </h2>
             <p class="fade-up">
                 <span data-lang="en">If you don't see results within 30 days, we'll refund your money in full.</span>
                 <span data-lang="fr">Si vous ne voyez pas de résultats sous 30 jours, nous vous remboursons intégralement.</span>
+                <span data-lang="es">Si no ves resultados en 30 días, te devolvemos tu dinero íntegramente.</span>
                 <span data-lang="de">Wenn Sie innerhalb von 30 Tagen keine Ergebnisse sehen, erhalten Sie Ihr Geld zurück.</span>
                 <span data-lang="ar">إذا ما شفتش نتائج خلال 30 يوم، نرجعلك فلوسك كاملة</span>
             </p>
@@ -387,17 +444,17 @@
         <div class="stats-inner">
             <div class="stats-heading fade-up">
                 <div class="section-label" style="color: var(--gold);">
-                    <span data-lang="en">OUR IMPACT</span><span data-lang="fr">NOTRE IMPACT</span><span data-lang="de">UNSERE WIRKUNG</span><span data-lang="ar">تأثيرنا</span>
+                    <span data-lang="en">OUR IMPACT</span><span data-lang="fr">NOTRE IMPACT</span><span data-lang="es">NUESTRO IMPACTO</span><span data-lang="de">UNSERE WIRKUNG</span><span data-lang="ar">تأثيرنا</span>
                 </div>
                 <h2 style="color: white; margin-top: 0.9rem;">
-                    <span data-lang="en">Our Numbers <span class="gold">Speak</span></span><span data-lang="fr">Nos Chiffres <span class="gold">Parlent</span></span><span data-lang="de">Unsere Zahlen <span class="gold">Sprechen</span></span><span data-lang="ar">أرقامنا <span class="gold">تحكي</span></span>
+                    <span data-lang="en">Our Numbers <span class="gold">Speak</span></span><span data-lang="fr">Nos Chiffres <span class="gold">Parlent</span></span><span data-lang="es">Nuestros Números <span class="gold">Hablan</span></span><span data-lang="de">Unsere Zahlen <span class="gold">Sprechen</span></span><span data-lang="ar">��رقامنا <span class="gold">تحكي</span></span>
                 </h2>
             </div>
             <div class="stats-row">
-                <div class="stat-card fade-up d1"><span class="stat-emoji">📈</span><div class="stat-num">+<span class="ctr" data-to="47">0</span><span class="unit">%</span></div><div class="stat-lbl"><span data-lang="en">Avg. Revenue Increase</span><span data-lang="fr">Augm. moy. du CA</span><span data-lang="de">Durchschn. Umsatzsteigerung</span><span data-lang="ar">متوسط زيادة المداخيل</span></div></div>
-                <div class="stat-card fade-up d2"><span class="stat-emoji">☕</span><div class="stat-num"><span class="ctr" data-to="12">0</span></div><div class="stat-lbl"><span data-lang="en">Projects Completed</span><span data-lang="fr">Projets réalisés</span><span data-lang="de">Abgeschlossene Projekte</span><span data-lang="ar">مشروع شغلنا معاه</span></div></div>
-                <div class="stat-card fade-up d3"><span class="stat-emoji">⭐</span><div class="stat-num"><span class="ctr" data-to="4.9" data-dec="1">0</span><span class="unit">/5</span></div><div class="stat-lbl"><span data-lang="en">Client Satisfaction</span><span data-lang="fr">Satisfaction client</span><span data-lang="de">Kundenzufriedenheit</span><span data-lang="ar">تقييم العملاء</span></div></div>
-                <div class="stat-card fade-up d4"><span class="stat-emoji">⏱️</span><div class="stat-num"><span class="ctr" data-to="30">0</span><span class="unit"><span data-lang="en" class="il"> Days</span><span data-lang="fr" class="il"> Jours</span><span data-lang="de" class="il"> Tage</span><span data-lang="ar" class="il"> يوم</span></span></div><div class="stat-lbl"><span data-lang="en">Results In</span><span data-lang="fr">Résultats en</span><span data-lang="de">Ergebnisse in</span><span data-lang="ar">نتائج في</span></div></div>
+                <div class="stat-card fade-up d1"><span class="stat-emoji">📈</span><div class="stat-num">+<span class="ctr" data-to="47">0</span><span class="unit">%</span></div><div class="stat-lbl"><span data-lang="en">Avg. Revenue Increase</span><span data-lang="fr">Augm. moy. du CA</span><span data-lang="es">Aumento medio de ingresos</span><span data-lang="de">Durchschn. Umsatzsteigerung</span><span data-lang="ar">متوسط زيادة المداخيل</span></div></div>
+                <div class="stat-card fade-up d2"><span class="stat-emoji">☕</span><div class="stat-num"><span class="ctr" data-to="12">0</span></div><div class="stat-lbl"><span data-lang="en">Projects Completed</span><span data-lang="fr">Projets réalisés</span><span data-lang="es">Proyectos completados</span><span data-lang="de">Abgeschlossene Projekte</span><span data-lang="ar">مشروع شغلنا معاه</span></div></div>
+                <div class="stat-card fade-up d3"><span class="stat-emoji">⭐</span><div class="stat-num"><span class="ctr" data-to="4.9" data-dec="1">0</span><span class="unit">/5</span></div><div class="stat-lbl"><span data-lang="en">Client Satisfaction</span><span data-lang="fr">Satisfaction client</span><span data-lang="es">Satisfacción del cliente</span><span data-lang="de">Kundenzufriedenheit</span><span data-lang="ar">تقييم العملاء</span></div></div>
+                <div class="stat-card fade-up d4"><span class="stat-emoji">⏱️</span><div class="stat-num"><span class="ctr" data-to="30">0</span><span class="unit"><span data-lang="en" class="il"> Days</span><span data-lang="fr" class="il"> Jours</span><span data-lang="es" class="il"> Días</span><span data-lang="de" class="il"> Tage</span><span data-lang="ar" class="il"> يوم</span></span></div><div class="stat-lbl"><span data-lang="en">Results In</span><span data-lang="fr">Résultats en</span><span data-lang="es">Resultados en</span><span data-lang="de">Ergebnisse in</span><span data-lang="ar">نتائج في</span></div></div>
             </div>
         </div>
     </section>
@@ -406,22 +463,22 @@
     <section class="stories" id="stories-cards">
         <div class="stories-inner">
             <div style="text-align:center; margin-bottom: 3.5rem;">
-                <div class="section-label fade-up"><span data-lang="en">SUCCESS STORIES</span><span data-lang="fr">HISTOIRES DE RÉUSSITE</span><span data-lang="de">ERFOLGSGESCHICHTEN</span><span data-lang="ar">قصص النجاح</span></div>
-                <h2 class="section-title fade-up"><span data-lang="en">Client Success Stories</span><span data-lang="fr">Histoires de Réussite Clients</span><span data-lang="de">Kunden-Erfolgsgeschichten</span><span data-lang="ar">قصص نجاح عملاءنا</span></h2>
+                <div class="section-label fade-up"><span data-lang="en">SUCCESS STORIES</span><span data-lang="fr">HISTOIRES DE RÉUSSITE</span><span data-lang="es">CASOS DE ÉXITO</span><span data-lang="de">ERFOLGSGESCHICHTEN</span><span data-lang="ar">قصص النجاح</span></div>
+                <h2 class="section-title fade-up"><span data-lang="en">Client Success Stories</span><span data-lang="fr">Histoires de Réussite Clients</span><span data-lang="es">Casos de Éxito de Clientes</span><span data-lang="de">Kunden-Erfolgsgeschichten</span><span data-lang="ar">قصص نجاح عملاءنا</span></h2>
                 <p style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0.5rem;">
-                    <span data-lang="en">Real numbers. Real results.</span><span data-lang="fr">De vrais chiffres. De vrais résultats.</span><span data-lang="de">Echte Zahlen. Echte Ergebnisse.</span><span data-lang="ar">أرقام حقيقية. نتائج ملموسة.</span>
+                    <span data-lang="en">Real numbers. Real results.</span><span data-lang="fr">De vrais chiffres. De vrais résultats.</span><span data-lang="es">Números reales. Resultados reales.</span><span data-lang="de">Echte Zahlen. Echte Ergebnisse.</span><span data-lang="ar">أرقام حقيقية. نتائج ملموسة.</span>
                 </p>
                 <div class="golden-divider"></div>
             </div>
             <div class="cards-grid">
                 <!-- 1 — Café Nour -->
-                <div class="client-card fade-up"><div class="card-top"><div class="card-icon">☕</div><div class="card-who"><div class="card-name">Café Nour</div><div class="card-badges"><span class="bdg bdg-city">Tunis</span><span class="bdg bdg-type">Café</span></div></div></div><div class="card-result">+52%<span data-lang="en" class="il"> revenue in 3 months</span><span data-lang="fr" class="il"> de CA en 3 mois</span><span data-lang="de" class="il"> Umsatz in 3 Monaten</span><span data-lang="ar" class="il"> مداخيل في 3 شهور</span></div><div class="card-quote">قبل Zid Up ما كنش عندنا حضور على الإنترنت. الآن الناس يلقاونا على Google و Instagram ويجيو يتقابلونا. الدخل تاعنا تزاد بشكل كبير والحمد لله.</div><div class="card-pills"><span class="pill"><i class="fab fa-instagram"></i> +1,200</span><span class="pill"><i class="fab fa-google"></i> 4.8★</span><span class="pill"><i class="fas fa-users"></i> +300<span data-lang="en" class="il"> clients/mo</span><span data-lang="fr" class="il"> clients/mois</span><span data-lang="de" class="il"> Kunden/Monat</span><span data-lang="ar" class="il"> زبون/شهر</span></span></div><div class="card-bar"><div class="bar-labels"><span class="bar-lbl before"><span data-lang="en" class="il">Before</span><span data-lang="fr" class="il">Avant</span><span data-lang="de" class="il">Vorher</span><span data-lang="ar" class="il">قبل</span></span><span class="bar-lbl after"><span data-lang="en" class="il">After</span><span data-lang="fr" class="il">Après</span><span data-lang="de" class="il">Nachher</span><span data-lang="ar" class="il">بعد</span></span></div><div class="bar-track"><div class="bar-b" style="width:35%"></div><div class="bar-a" style="width:72%"></div></div></div><div class="card-served"><i class="fas fa-check-circle"></i><span data-lang="en" class="il"> Served by Zid Up</span><span data-lang="fr" class="il"> Servi par Zid Up</span><span data-lang="de" class="il"> Betreut von Zid Up</span><span data-lang="ar" class="il"> خدمهم Zid Up</span></div></div>
+                <div class="client-card fade-up"><div class="card-top"><div class="card-icon">☕</div><div class="card-who"><div class="card-name">Café Nour</div><div class="card-badges"><span class="bdg bdg-city">Tunis</span><span class="bdg bdg-type">Café</span></div></div></div><div class="card-result">+52%<span data-lang="en" class="il"> revenue in 3 months</span><span data-lang="fr" class="il"> de CA en 3 mois</span><span data-lang="es" class="il"> de ingresos en 3 meses</span><span data-lang="de" class="il"> Umsatz in 3 Monaten</span><span data-lang="ar" class="il"> مداخيل في 3 شهور</span></div><div class="card-quote">قبل Zid Up ما كنش عندنا حضور على الإنترنت. الآن الناس يلقاونا على Google و Instagram ويجيو يتقابلونا. الدخل تاعنا تزاد بشكل كبير والحمد لله.</div><div class="card-pills"><span class="pill"><i class="fab fa-instagram"></i> +1,200</span><span class="pill"><i class="fab fa-google"></i> 4.8★</span><span class="pill"><i class="fas fa-users"></i> +300<span data-lang="en" class="il"> clients/mo</span><span data-lang="fr" class="il"> clients/mois</span><span data-lang="de" class="il"> Kunden/Monat</span><span data-lang="ar" class="il"> زبون/شهر</span></span></div><div class="card-bar"><div class="bar-labels"><span class="bar-lbl before"><span data-lang="en" class="il">Before</span><span data-lang="fr" class="il">Avant</span><span data-lang="de" class="il">Vorher</span><span data-lang="ar" class="il">قبل</span></span><span class="bar-lbl after"><span data-lang="en" class="il">After</span><span data-lang="fr" class="il">Après</span><span data-lang="de" class="il">Nachher</span><span data-lang="ar" class="il">بعد</span></span></div><div class="bar-track"><div class="bar-b" style="width:35%"></div><div class="bar-a" style="width:72%"></div></div></div><div class="card-served"><i class="fas fa-check-circle"></i><span data-lang="en" class="il"> Served by Zid Up</span><span data-lang="fr" class="il"> Servi par Zid Up</span><span data-lang="de" class="il"> Betreut von Zid Up</span><span data-lang="ar" class="il"> خدمهم Zid Up</span></div></div>
                 <!-- 2 — Restaurant El Baraka -->
-                <div class="client-card fade-up delay-1"><div class="card-top"><div class="card-icon">🍽️</div><div class="card-who"><div class="card-name">Restaurant El Baraka</div><div class="card-badges"><span class="bdg bdg-city">Sfax</span><span class="bdg bdg-type">Restaurant</span></div></div></div><div class="card-result">+38%<span data-lang="en" class="il"> table occupancy</span><span data-lang="fr" class="il"> occupation des tables</span><span data-lang="de" class="il"> Tischbelegung</span><span data-lang="ar" class="il"> إشغال الطاولات</span></div><div class="card-quote">المطعم كان شبه فارغ في الأيام العادية. بعد ما عدلولنا القائمة و دارولنا حملات تسويقية، الطاولات تولي كاملة حتى في وسط الأسبوع.</div><div class="card-pills"><span class="pill"><i class="fas fa-utensils"></i><span data-lang="en" class="il">Menu optimized</span><span data-lang="fr" class="il">Menu optimisé</span><span data-lang="de" class="il">Speisekarte optimiert</span><span data-lang="ar" class="il">القائمة تحسنات</span></span><span class="pill"><i class="fab fa-google"></i> 4.7★</span><span class="pill"><i class="fas fa-chair"></i> +45<span data-lang="en" class="il"> seats/day</span><span data-lang="fr" class="il"> places/jour</span><span data-lang="de" class="il"> Plätze/Tag</span><span data-lang="ar" class="il"> مقعد/يوم</span></span></div><div class="card-bar"><div class="bar-labels"><span class="bar-lbl before"><span data-lang="en" class="il">Before</span><span data-lang="fr" class="il">Avant</span><span data-lang="de" class="il">Vorher</span><span data-lang="ar" class="il">قبل</span></span><span class="bar-lbl after"><span data-lang="en" class="il">After</span><span data-lang="fr" class="il">Après</span><span data-lang="de" class="il">Nachher</span><span data-lang="ar" class="il">بعد</span></span></div><div class="bar-track"><div class="bar-b" style="width:40%"></div><div class="bar-a" style="width:68%"></div></div></div><div class="card-served"><i class="fas fa-check-circle"></i><span data-lang="en" class="il"> Served by Zid Up</span><span data-lang="fr" class="il"> Servi par Zid Up</span><span data-lang="de" class="il"> Betreut von Zid Up</span><span data-lang="ar" class="il"> خدمهم Zid Up</span></div></div>
+                <div class="client-card fade-up delay-1"><div class="card-top"><div class="card-icon">🍽️</div><div class="card-who"><div class="card-name">Restaurant El Baraka</div><div class="card-badges"><span class="bdg bdg-city">Sfax</span><span class="bdg bdg-type">Restaurant</span></div></div></div><div class="card-result">+38%<span data-lang="en" class="il"> table occupancy</span><span data-lang="fr" class="il"> occupation des tables</span><span data-lang="es" class="il"> ocupación de mesas</span><span data-lang="de" class="il"> Tischbelegung</span><span data-lang="ar" class="il"> إشغال الطاولات</span></div><div class="card-quote">المطعم كان شبه فارغ في الأيام العادية. بعد ما عدلولنا القائمة و دارولنا حملات تسويقية، الطاولات تولي كاملة حتى في وسط الأسبوع.</div><div class="card-pills"><span class="pill"><i class="fas fa-utensils"></i><span data-lang="en" class="il">Menu optimized</span><span data-lang="fr" class="il">Menu optimisé</span><span data-lang="de" class="il">Speisekarte optimiert</span><span data-lang="ar" class="il">القائمة تحسنات</span></span><span class="pill"><i class="fab fa-google"></i> 4.7★</span><span class="pill"><i class="fas fa-chair"></i> +45<span data-lang="en" class="il"> seats/day</span><span data-lang="fr" class="il"> places/jour</span><span data-lang="de" class="il"> Plätze/Tag</span><span data-lang="ar" class="il"> مقعد/يوم</span></span></div><div class="card-bar"><div class="bar-labels"><span class="bar-lbl before"><span data-lang="en" class="il">Before</span><span data-lang="fr" class="il">Avant</span><span data-lang="de" class="il">Vorher</span><span data-lang="ar" class="il">قبل</span></span><span class="bar-lbl after"><span data-lang="en" class="il">After</span><span data-lang="fr" class="il">Après</span><span data-lang="de" class="il">Nachher</span><span data-lang="ar" class="il">بعد</span></span></div><div class="bar-track"><div class="bar-b" style="width:40%"></div><div class="bar-a" style="width:68%"></div></div></div><div class="card-served"><i class="fas fa-check-circle"></i><span data-lang="en" class="il"> Served by Zid Up</span><span data-lang="fr" class="il"> Servi par Zid Up</span><span data-lang="de" class="il"> Betreut von Zid Up</span><span data-lang="ar" class="il"> خدمهم Zid Up</span></div></div>
                 <!-- 3 — Mcafé Carthage -->
-                <div class="client-card fade-up delay-2"><div class="card-top"><div class="card-icon">☕</div><div class="card-who"><div class="card-name">Mcafé Carthage</div><div class="card-badges"><span class="bdg bdg-city">Sousse</span><span class="bdg bdg-type">Café</span></div></div></div><div class="card-result">200 → 2,400 Instagram<span data-lang="en" class="il"> followers</span><span data-lang="fr" class="il"> abonnés</span><span data-lang="de" class="il"> Follower</span><span data-lang="ar" class="il"> متابع</span></div><div class="card-quote">كنت منشرة صور ما تجيب والو. الفريق تاع Zid Up بدلو المحتوى كامل و دارولنا استراتيجيا. في 3 شهور وصلنا لـ 2400 متابع وحقيقيين!</div><div class="card-pills"><span class="pill"><i class="fab fa-instagram"></i> +2,200</span><span class="pill"><i class="fas fa-ad"></i><span data-lang="en" class="il">Ads running</span><span data-lang="fr" class="il">Publicités actives</span><span data-lang="de" class="il">Werbung aktiv</span><span data-lang="ar" class="il">إعلانات تعمل</span></span><span class="pill"><i class="fas fa-coins"></i> +28%<span data-lang="en" class="il"> revenue</span><span data-lang="fr" class="il"> CA</span><span data-lang="de" class="il"> Umsatz</span><span data-lang="ar" class="il"> مداخيل</span></span></div><div class="card-bar"><div class="bar-labels"><span class="bar-lbl before"><span data-lang="en" class="il">Before</span><span data-lang="fr" class="il">Avant</span><span data-lang="de" class="il">Vorher</span><span data-lang="ar" class="il">قبل</span></span><span class="bar-lbl after"><span data-lang="en" class="il">After</span><span data-lang="fr" class="il">Après</span><span data-lang="de" class="il">Nachher</span><span data-lang="ar" class="il">بعد</span></span></div><div class="bar-track"><div class="bar-b" style="width:8%"></div><div class="bar-a" style="width:60%"></div></div></div><div class="card-served"><i class="fas fa-check-circle"></i><span data-lang="en" class="il"> Served by Zid Up</span><span data-lang="fr" class="il"> Servi par Zid Up</span><span data-lang="de" class="il"> Betreut von Zid Up</span><span data-lang="ar" class="il"> خدمهم Zid Up</span></div></div>
+                <div class="client-card fade-up delay-2"><div class="card-top"><div class="card-icon">☕</div><div class="card-who"><div class="card-name">Mcafé Carthage</div><div class="card-badges"><span class="bdg bdg-city">Sousse</span><span class="bdg bdg-type">Café</span></div></div></div><div class="card-result">200 → 2,400 Instagram<span data-lang="en" class="il"> followers</span><span data-lang="fr" class="il"> abonnés</span><span data-lang="es" class="il"> seguidores</span><span data-lang="de" class="il"> Follower</span><span data-lang="ar" class="il"> متابع</span></div><div class="card-quote">كنت منشرة صور ما تجيب والو. الفريق تاع Zid Up بدلو المحتوى كامل و دارولنا استراتيجيا. في 3 شهور وصلنا لـ 2400 متابع وحقيقيين!</div><div class="card-pills"><span class="pill"><i class="fab fa-instagram"></i> +2,200</span><span class="pill"><i class="fas fa-ad"></i><span data-lang="en" class="il">Ads running</span><span data-lang="fr" class="il">Publicités actives</span><span data-lang="de" class="il">Werbung aktiv</span><span data-lang="ar" class="il">إعلانات تعمل</span></span><span class="pill"><i class="fas fa-coins"></i> +28%<span data-lang="en" class="il"> revenue</span><span data-lang="fr" class="il"> CA</span><span data-lang="de" class="il"> Umsatz</span><span data-lang="ar" class="il"> مداخيل</span></span></div><div class="card-bar"><div class="bar-labels"><span class="bar-lbl before"><span data-lang="en" class="il">Before</span><span data-lang="fr" class="il">Avant</span><span data-lang="de" class="il">Vorher</span><span data-lang="ar" class="il">قبل</span></span><span class="bar-lbl after"><span data-lang="en" class="il">After</span><span data-lang="fr" class="il">Après</span><span data-lang="de" class="il">Nachher</span><span data-lang="ar" class="il">بعد</span></span></div><div class="bar-track"><div class="bar-b" style="width:8%"></div><div class="bar-a" style="width:60%"></div></div></div><div class="card-served"><i class="fas fa-check-circle"></i><span data-lang="en" class="il"> Served by Zid Up</span><span data-lang="fr" class="il"> Servi par Zid Up</span><span data-lang="de" class="il"> Betreut von Zid Up</span><span data-lang="ar" class="il"> خدمهم Zid Up</span></div></div>
                 <!-- 4 — Hôtel Jasmin -->
-                <div class="client-card fade-up delay-3"><div class="card-top"><div class="card-icon">🏨</div><div class="card-who"><div class="card-name">Hôtel Jasmin</div><div class="card-badges"><span class="bdg bdg-city">Monastir</span><span class="bdg bdg-type">Hôtel</span></div></div></div><div class="card-result">+65%<span data-lang="en" class="il"> online bookings</span><span data-lang="fr" class="il"> réservations en ligne</span><span data-lang="de" class="il"> Online-Buchungen</span><span data-lang="ar" class="il"> حجوزات أونلاين</span></div><div class="card-quote">الفندق كان يعتمد بس على السياح اللي يجيو بالصدفة. الآن عندنا حجوزات أونلاين من ألمانيا وفرنسا وتونس. الموقع الجديد خلهم يحجزو بسهولة.</div><div class="card-pills"><span class="pill"><i class="fas fa-globe"></i><span data-lang="en" class="il">New website</span><span data-lang="fr" class="il">Nouveau site</span><span data-lang="de" class="il">Neue Website</span><span data-lang="ar" class="il">موقع جديد</span></span><span class="pill"><i class="fab fa-google"></i> 4.9★</span><span class="pill"><i class="fas fa-bed"></i> +40<span data-lang="en" class="il"> bookings/mo</span><span data-lang="fr" class="il"> réservations/mois</span><span data-lang="de" class="il"> Buchungen/Monat</span><span data-lang="ar" class="il"> حجز/شهر</span></span></div><div class="card-bar"><div class="bar-labels"><span class="bar-lbl before"><span data-lang="en" class="il">Before</span><span data-lang="fr" class="il">Avant</span><span data-lang="de" class="il">Vorher</span><span data-lang="ar" class="il">قبل</span></span><span class="bar-lbl after"><span data-lang="en" class="il">After</span><span data-lang="fr" class="il">Après</span><span data-lang="de" class="il">Nachher</span><span data-lang="ar" class="il">بعد</span></span></div><div class="bar-track"><div class="bar-b" style="width:20%"></div><div class="bar-a" style="width:65%"></div></div></div><div class="card-served"><i class="fas fa-check-circle"></i><span data-lang="en" class="il"> Served by Zid Up</span><span data-lang="fr" class="il"> Servi par Zid Up</span><span data-lang="de" class="il"> Betreut von Zid Up</span><span data-lang="ar" class="il"> خدمهم Zid Up</span></div></div>
+                <div class="client-card fade-up delay-3"><div class="card-top"><div class="card-icon">🏨</div><div class="card-who"><div class="card-name">Hôtel Jasmin</div><div class="card-badges"><span class="bdg bdg-city">Monastir</span><span class="bdg bdg-type">Hôtel</span></div></div></div><div class="card-result">+65%<span data-lang="en" class="il"> online bookings</span><span data-lang="fr" class="il"> réservations en ligne</span><span data-lang="es" class="il"> reservas en línea</span><span data-lang="de" class="il"> Online-Buchungen</span><span data-lang="ar" class="il"> حجوزات أونلاين</span></div><div class="card-quote">الفندق كان يعتمد بس على السياح اللي يجيو بالصدفة. الآن عندنا حجوزات أونلاين من ألمانيا وفرنسا وتونس. الموقع الجديد خلهم يحجزو بسهولة.</div><div class="card-pills"><span class="pill"><i class="fas fa-globe"></i><span data-lang="en" class="il">New website</span><span data-lang="fr" class="il">Nouveau site</span><span data-lang="de" class="il">Neue Website</span><span data-lang="ar" class="il">موقع جديد</span></span><span class="pill"><i class="fab fa-google"></i> 4.9★</span><span class="pill"><i class="fas fa-bed"></i> +40<span data-lang="en" class="il"> bookings/mo</span><span data-lang="fr" class="il"> réservations/mois</span><span data-lang="de" class="il"> Buchungen/Monat</span><span data-lang="ar" class="il"> حجز/شهر</span></span></div><div class="card-bar"><div class="bar-labels"><span class="bar-lbl before"><span data-lang="en" class="il">Before</span><span data-lang="fr" class="il">Avant</span><span data-lang="de" class="il">Vorher</span><span data-lang="ar" class="il">قبل</span></span><span class="bar-lbl after"><span data-lang="en" class="il">After</span><span data-lang="fr" class="il">Après</span><span data-lang="de" class="il">Nachher</span><span data-lang="ar" class="il">بعد</span></span></div><div class="bar-track"><div class="bar-b" style="width:20%"></div><div class="bar-a" style="width:65%"></div></div></div><div class="card-served"><i class="fas fa-check-circle"></i><span data-lang="en" class="il"> Served by Zid Up</span><span data-lang="fr" class="il"> Servi par Zid Up</span><span data-lang="de" class="il"> Betreut von Zid Up</span><span data-lang="ar" class="il"> خدمهم Zid Up</span></div></div>
             </div>
         </div>
     </section>
@@ -430,8 +487,8 @@
     <section class="map-sec" id="map-sec">
         <div class="map-inner">
             <div style="text-align:center; margin-bottom: 2.5rem;">
-                <div class="section-label fade-up"><span data-lang="en">OUR REACH</span><span data-lang="fr">NOTRE PORTÉE</span><span data-lang="de">UNSERE REICHWEITE</span><span data-lang="ar">وصولنا</span></div>
-                <h2 class="section-title fade-up"><span data-lang="en">We Operate Across Tunisia</span><span data-lang="fr">Nous opérons dans toute la Tunisie</span><span data-lang="de">Wir sind in ganz Tunesien tätig</span><span data-lang="ar">نخدمو في كل تونس</span></h2>
+                <div class="section-label fade-up"><span data-lang="en">OUR REACH</span><span data-lang="fr">NOTRE PORTÉE</span><span data-lang="es">NUESTRO ALCANCE</span><span data-lang="de">UNSERE REICHWEITE</span><span data-lang="ar">وصولنا</span></div>
+                <h2 class="section-title fade-up"><span data-lang="en">We Operate Across Tunisia</span><span data-lang="fr">Nous opérons dans toute la Tunisie</span><span data-lang="es">Operamos en toda Túnez</span><span data-lang="de">Wir sind in ganz Tunesien tätig</span><span data-lang="ar">نخدمو في كل تونس</span></h2>
                 <div class="golden-divider"></div>
             </div>
             <div class="map-frame fade-up d1"><div id="map"></div></div>
@@ -443,10 +500,10 @@
     <section class="cta-strip" id="cta-stories">
         <div class="cta-body fade-up">
             <div class="cta-main">
-                <span data-lang="en">Your business deserves the same results</span><span data-lang="fr">Votre entreprise mérite les mêmes résultats</span><span data-lang="de">Ihr Unternehmen verdient die gleichen Ergebnisse</span><span data-lang="ar">مشروعك يستاهل نفس النتائج</span>
+                <span data-lang="en">Your business deserves the same results</span><span data-lang="fr">Votre entreprise mérite les mêmes résultats</span><span data-lang="es">Tu negocio merece los mismos resultados</span><span data-lang="de">Ihr Unternehmen verdient die gleichen Ergebnisse</span><span data-lang="ar">مشروعك يستاهل نفس النتائج</span>
             </div>
             <a href="#contact" class="cta-btn">
-                <span data-lang="en">Book Free Consultation →</span><span data-lang="fr">Réserver Consultation Gratuite →</span><span data-lang="de">Kostenlose Beratung Buchen →</span><span data-lang="ar">← احجز استشارتك المجانية</span>
+                <span data-lang="en">Book Free Consultation →</span><span data-lang="fr">Réserver Consultation Gratuite →</span><span data-lang="es">Reservar Consulta Gratuita →</span><span data-lang="de">Kostenlose Beratung Buchen →</span><span data-lang="ar">← احجز استش��رتك المجانية</span>
             </a>
         </div>
     </section>
@@ -455,8 +512,8 @@
     <section class="contact" id="contact">
         <div class="section-container">
             <div style="text-align:center; margin-bottom: 3rem;">
-                <div class="section-label fade-up"><span data-lang="en">GET IN TOUCH</span><span data-lang="fr">CONTACTEZ-NOUS</span><span data-lang="de">KONTAKT</span><span data-lang="ar">اتصل بنا</span></div>
-                <h2 class="section-title fade-up"><span data-lang="en">Book Your Free Consultation</span><span data-lang="fr">Réservez Votre Consultation Gratuite</span><span data-lang="de">Buchen Sie Ihre Kostenlose Beratung</span><span data-lang="ar">احجز استشارتك المجانية</span></h2>
+                <div class="section-label fade-up"><span data-lang="en">GET IN TOUCH</span><span data-lang="fr">CONTACTEZ-NOUS</span><span data-lang="es">CONTÁCTANOS</span><span data-lang="de">KONTAKT</span><span data-lang="ar">اتصل بنا</span></div>
+                <h2 class="section-title fade-up"><span data-lang="en">Book Your Free Consultation</span><span data-lang="fr">Réservez Votre Consultation Gratuite</span><span data-lang="es">Reserva Tu Consulta Gratuita</span><span data-lang="de">Buchen Sie Ihre Kostenlose Beratung</span><span data-lang="ar">احجز استشارتك المجانية</span></h2>
                 <div class="golden-divider"></div>
             </div>
             <div class="contact-wrapper">
@@ -494,27 +551,80 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 
     <script>
-        // ── GLOBAL DICTIONARY ──
+        /* ======================================================================
+           MULTILINGUAL SYSTEM
+           ----------------------------------------------------------------------
+           - SUPPORTED:  list of language codes the site offers. Add a code here
+                         (and the matching <span data-lang="xx"> / dict entry) to
+                         support a new language — no other JS changes needed.
+           - dict:       translation dictionary for dynamic UI built by JS
+                         (form labels, placeholders, map popups, toasts).
+                         Inline page copy uses <span data-lang="xx"> blocks instead.
+           - Persistence: the chosen language is saved to localStorage.
+           - Detection:   on first visit we read navigator.language.
+           - RTL:         Arabic switches <html dir="rtl">.
+           ====================================================================== */
+        const SUPPORTED = ['en', 'fr', 'es', 'de', 'ar'];
+        const DEFAULT_LANG = 'en';
+        const RTL_LANGS = ['ar'];
+        const STORAGE_KEY = 'zidup_lang';
+
+        // Translation dictionary — easy to extend: add a key per language.
         const dict = {
-            en: { name: "Name", phone: "Phone", type: "Business Type", msg: "Message", submit: "Send Now →", sending: "Sending...", optDef: "Choose your business type...", cafe: "Café", rest: "Restaurant", hotel: "Hotel", other: "Other", loc: "Location", email: "Email", phoneL: "Phone", wa: "Contact via WhatsApp", phName: "Enter your name...", phMsg: "What would you like to ask us?", served: "Served by Zid Up", verified: "Verified Result" },
-            fr: { name: "Nom", phone: "Téléphone", type: "Type d'entreprise", msg: "Message", submit: "Envoyer →", sending: "Envoi...", optDef: "Choisissez votre type...", cafe: "Café", rest: "Restaurant", hotel: "Hôtel", other: "Autre", loc: "Emplacement", email: "Email", phoneL: "Téléphone", wa: "Contacter via WhatsApp", phName: "Entrez votre nom...", phMsg: "Que voulez-vous nous demander ?", served: "Servi par Zid Up", verified: "Résultat vérifié" },
-            de: { name: "Name", phone: "Telefon", type: "Unternehmenstyp", msg: "Nachricht", submit: "Senden →", sending: "Senden...", optDef: "Wählen Sie Ihren Typ...", cafe: "Café", rest: "Restaurant", hotel: "Hotel", other: "Andere", loc: "Standort", email: "E-Mail", phoneL: "Telefon", wa: "Über WhatsApp kontaktieren", phName: "Geben Sie Ihren Namen ein...", phMsg: "Was möchten Sie uns fragen?", served: "Betreut von Zid Up", verified: "Verifiziertes Ergebnis" },
-            ar: { name: "الاسم", phone: "رقم الهاتف", type: "نوع المشروع", msg: "الرسالة", submit: "← أرسل الآن", sending: "جاري الإرسال...", optDef: "اختر نوع مشروعك...", cafe: "مقهى", rest: "مطعم", hotel: "فندق", other: "أخرى", loc: "الموقع", email: "البريد الإلكتروني", phoneL: "الهاتف", wa: "تواصل عبر واتساب", phName: "أدخل اسمك...", phMsg: "شنوة تحب تسألنا؟", served: "خدمهم Zid Up", verified: "نتيجة مؤكدة" }
+            en: { name: "Name", phone: "Phone", type: "Business Type", msg: "Message", submit: "Send Now →", sending: "Sending...", optDef: "Choose your business type...", cafe: "Café", rest: "Restaurant", hotel: "Hotel", other: "Other", loc: "Location", email: "Email", phoneL: "Phone", wa: "Contact via WhatsApp", phName: "Enter your name...", phMsg: "What would you like to ask us?", served: "Served by Zid Up", verified: "Verified Result", fillFields: "Please fill all required fields ⚠️", thanks: "Thank you ", soon: "! We will contact you soon ✅" },
+            fr: { name: "Nom", phone: "Téléphone", type: "Type d'entreprise", msg: "Message", submit: "Envoyer →", sending: "Envoi...", optDef: "Choisissez votre type...", cafe: "Café", rest: "Restaurant", hotel: "Hôtel", other: "Autre", loc: "Emplacement", email: "Email", phoneL: "Téléphone", wa: "Contacter via WhatsApp", phName: "Entrez votre nom...", phMsg: "Que voulez-vous nous demander ?", served: "Servi par Zid Up", verified: "Résultat vérifié", fillFields: "Veuillez remplir tous les champs obligatoires ⚠️", thanks: "Merci ", soon: " ! Nous vous contacterons bientôt ✅" },
+            es: { name: "Nombre", phone: "Teléfono", type: "Tipo de negocio", msg: "Mensaje", submit: "Enviar →", sending: "Enviando...", optDef: "Elige tu tipo de negocio...", cafe: "Cafetería", rest: "Restaurante", hotel: "Hotel", other: "Otro", loc: "Ubicación", email: "Correo", phoneL: "Teléfono", wa: "Contactar por WhatsApp", phName: "Escribe tu nombre...", phMsg: "¿Qué te gustaría preguntarnos?", served: "Atendido por Zid Up", verified: "Resultado verificado", fillFields: "Por favor, completa todos los campos obligatorios ⚠️", thanks: "¡Gracias ", soon: "! Te contactaremos pronto ✅" },
+            de: { name: "Name", phone: "Telefon", type: "Unternehmenstyp", msg: "Nachricht", submit: "Senden →", sending: "Senden...", optDef: "Wählen Sie Ihren Typ...", cafe: "Café", rest: "Restaurant", hotel: "Hotel", other: "Andere", loc: "Standort", email: "E-Mail", phoneL: "Telefon", wa: "Über WhatsApp kontaktieren", phName: "Geben Sie Ihren Namen ein...", phMsg: "Was möchten Sie uns fragen?", served: "Betreut von Zid Up", verified: "Verifiziertes Ergebnis", fillFields: "Bitte füllen Sie alle Pflichtfelder aus ⚠️", thanks: "Danke ", soon: "! Wir melden uns bald bei Ihnen ✅" },
+            ar: { name: "الاسم", phone: "رقم الهاتف", type: "نوع المشروع", msg: "��لرسالة", submit: "← أرسل الآن", sending: "جاري الإرسال...", optDef: "اختر نوع مشروعك...", cafe: "مقهى", rest: "مطعم", hotel: "فندق", other: "أخرى", loc: "الموقع", email: "البريد الإلكتروني", phoneL: "الهاتف", wa: "تواصل عبر واتساب", phName: "أدخل اسمك...", phMsg: "شنوة تحب تسألنا؟", served: "خدمهم Zid Up", verified: "نتيجة مؤكدة", fillFields: "ي��جى ملء جميع الحقول المطلوبة ⚠️", thanks: "شكراً ", soon: "! سنتواصل معك قريباً ✅" }
         };
 
-        let currentLang = 'en';
+        let currentLang = DEFAULT_LANG;
 
-        function setLanguage(lang) {
+        /* English fallback: if an element has no <span data-lang="{lang}">, reveal
+           its English span so content never disappears for partial translations. */
+        function applyFallback(lang) {
+            document.querySelectorAll('.force-show').forEach(el => el.classList.remove('force-show'));
+            if (lang === 'en') return;
+            // Group sibling translation spans by their shared parent element.
+            const groups = new Map();
+            document.querySelectorAll('[data-lang]').forEach(span => {
+                const parent = span.parentElement;
+                if (!groups.has(parent)) groups.set(parent, new Set());
+                groups.get(parent).add(span.dataset.lang);
+            });
+            groups.forEach((langs, parent) => {
+                if (!langs.has(lang) && langs.has('en')) {
+                    parent.querySelector('[data-lang="en"]').classList.add('force-show');
+                }
+            });
+        }
+
+        /* Core: switch the whole site to `lang` without reloading. */
+        function setLanguage(lang, persist = true) {
+            if (!SUPPORTED.includes(lang)) lang = DEFAULT_LANG;
             currentLang = lang;
+
+            // Toggle the body class that drives which data-lang spans are visible.
             document.body.className = document.body.className.replace(/lang-\w+/g, '').trim();
             document.body.classList.add('lang-' + lang);
+
+            // Update document language + direction (RTL for Arabic).
+            const isRTL = RTL_LANGS.includes(lang);
             document.documentElement.lang = lang;
-            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
 
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+            // Reveal English fallbacks for any untranslated blocks.
+            applyFallback(lang);
 
-            // Update Form Placeholders & Labels
-            const d = dict[lang];
+            // Sync every language button's active + ARIA state (both switchers).
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                const active = btn.dataset.lang === lang;
+                btn.classList.toggle('active', active);
+                btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+
+            // Update dynamic, JS-rendered UI (form + map) from the dictionary.
+            const d = dict[lang] || dict.en;
             document.getElementById('label-name').textContent = d.name;
             document.querySelector('[name="name"]').placeholder = d.phName;
             document.getElementById('label-phone').textContent = d.phone;
@@ -533,11 +643,39 @@
             document.getElementById('wa-btn').querySelector('span').textContent = d.wa;
 
             updateMapPopups(lang);
+
+            // Persist the choice so it survives a page refresh.
+            if (persist) {
+                try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) {}
+            }
         }
 
+        // Wire up both desktop and mobile language buttons (no reload, smooth fade).
         document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+            btn.addEventListener('click', () => {
+                if (btn.dataset.lang === currentLang) return;
+                document.body.classList.add('is-switching');
+                setTimeout(() => {
+                    setLanguage(btn.dataset.lang);
+                    document.body.classList.remove('is-switching');
+                }, 150);
+            });
         });
+
+        /* Pick the initial language:
+           1) a previously saved choice, else
+           2) the browser's preferred language (if supported), else
+           3) the default (English). */
+        function detectInitialLanguage() {
+            let saved = null;
+            try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+            if (saved && SUPPORTED.includes(saved)) return saved;
+
+            const browser = (navigator.languages || [navigator.language || ''])
+                .map(l => l.toLowerCase().split('-')[0]);
+            const match = browser.find(code => SUPPORTED.includes(code));
+            return match || DEFAULT_LANG;
+        }
 
         // ── MAP POPUPS ──
         function updateMapPopups(lang) {
@@ -551,8 +689,8 @@
             }
         }
 
-        // Initialize default language
-        setLanguage('en');
+        // Initialize: detect saved/browser language, then apply it.
+        setLanguage(detectInitialLanguage());
 
         // ── NAVBAR SCROLL ──
         const navbar = document.getElementById('navbar');
@@ -619,9 +757,9 @@
         // ── FORM ──
         function handleSubmit(e) {
             e.preventDefault(); const form = e.target; const name = form.querySelector('[name="name"]').value.trim(); const phone = form.querySelector('[name="phone"]').value.trim(); const type = form.querySelector('[name="type"]').value;
-            if (!name || !phone || !type) { showToast(currentLang === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة ⚠️' : 'Please fill all required fields ⚠️'); return; }
+            if (!name || !phone || !type) { showToast(dict[currentLang].fillFields); return; }
             const btn = form.querySelector('.submit-btn'); btn.textContent = dict[currentLang].sending; btn.disabled = true;
-            setTimeout(() => { showToast((currentLang === 'ar' ? 'شكراً ' : 'Thank you ') + name + '! ' + (currentLang === 'ar' ? 'سنتواصل معك قريباً ✅' : 'We will contact you soon ✅')); form.reset(); btn.textContent = dict[currentLang].submit; btn.disabled = false; }, 1500);
+            setTimeout(() => { showToast(dict[currentLang].thanks + name + dict[currentLang].soon); form.reset(); btn.textContent = dict[currentLang].submit; btn.disabled = false; }, 1500);
         }
 
         // ── TOAST ──
