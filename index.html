@@ -256,25 +256,7 @@
 <body class="lang-en">
 
     <!-- Set saved/detected language class ASAP to avoid a flash of English -->
-    <script>
-        (function () {
-            var SUPPORTED = ['en', 'fr', 'es', 'de', 'ar'];
-            var lang = null;
-            try { lang = localStorage.getItem('zidup_lang'); } catch (e) {}
-            if (!lang || SUPPORTED.indexOf(lang) === -1) {
-                var langs = navigator.languages || [navigator.language || 'en'];
-                for (var i = 0; i < langs.length; i++) {
-                    var code = langs[i].toLowerCase().split('-')[0];
-                    if (SUPPORTED.indexOf(code) !== -1) { lang = code; break; }
-                }
-            }
-            if (!lang || SUPPORTED.indexOf(lang) === -1) lang = 'en';
-            document.body.className = document.body.className.replace(/lang-\w+/g, '').trim() + ' lang-' + lang;
-            document.documentElement.lang = lang;
-            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-        })();
-    </script>
-
+   
     <!-- NAVIGATION -->
     <nav id="navbar">
         <img src="https://z-cdn-media.chatglm.cn/files/1b7b67ff-57fd-426e-b04f-8fbbc0659eed.png?auth_key=1879908878-d63f02d1f6ee4525b6a9771fec132866-0-e5a015131449b942cfd66515b29311e8" alt="ZID UP Logo" class="nav-logo">
@@ -653,14 +635,15 @@
         // Wire up both desktop and mobile language buttons (no reload).
         // The language is applied immediately on click so it always feels responsive;
         // a brief fade class is toggled purely for a smooth visual transition.
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (btn.dataset.lang === currentLang) return;
-                setLanguage(btn.dataset.lang);
-                document.body.classList.add('is-switching');
-                setTimeout(() => document.body.classList.remove('is-switching'), 200);
-            });
-        });
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const lang = btn.dataset.lang;
+        if (lang === currentLang) return;
+        setLanguage(lang);
+        document.body.classList.add('is-switching');
+        setTimeout(() => document.body.classList.remove('is-switching'), 200);
+    });
+});
 
         /* Pick the initial language:
            1) a previously saved choice, else
@@ -690,8 +673,9 @@
         }
 
         // Initialize: detect saved/browser language, then apply it.
-        setLanguage(detectInitialLanguage());
-
+       document.addEventListener('DOMContentLoaded', function() {
+    setLanguage(detectInitialLanguage());
+});
         // ── NAVBAR SCROLL ──
         const navbar = document.getElementById('navbar');
         window.addEventListener('scroll', () => { navbar.classList.toggle('scrolled', window.scrollY > 60); });
